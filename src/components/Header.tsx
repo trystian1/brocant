@@ -34,7 +34,6 @@ export const Header = ({ amountOfItemsInBasket }: Props) => {
         </Link>
         <Link href={"/basket"}>
           <div className="basker-wrap" style={{ display: "flex", alignItems: "center" }}>
-            <span style={{ marginRight: '2em', color:' #fff' }}>Afrekenen:</span>
             <FaShoppingBasket color={"#fff"} size={50} />
             <span className="amount">{amountOfItemsInBasket}</span>
           </div>

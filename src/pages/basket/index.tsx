@@ -83,7 +83,7 @@ const BasketPage = ({ basket, products }: { basket: any; products: any }) => {
             </div>
    
             <button className="basket-delete" onClick={() => deleteFromBasket(item.product.id)}>
-              Verwijderen
+              X
             </button>
           </div>;
         })}

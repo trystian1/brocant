@@ -97,7 +97,6 @@ function ProductPage({
           ))}
         </div>
       </div>
-      dialog:
       <DialogWindow open={isDialogOpen} setIsOpen={setDialogOpen} />
     </>
   );
