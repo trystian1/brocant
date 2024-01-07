@@ -21,9 +21,9 @@ const ProductPage = ({ product, numberOfItemsInBasket, userId }: { product: any,
         if (data.data.updateProduct.stock < 0 || !basket || !userId) {
           return;
         }
-    
-        const updatedBasket = await addToBasket(basket, product.id, 1);
         setDialogOpen(true);
+        const updatedBasket = await addToBasket(basket, product.id, 1);
+        
         const itemsQuantity = updatedBasket.data.publishBasket.items?.reduce((a: number, b: any) => a + b.quantity , 0);
         setAmountOfItemsInBasket(
           itemsQuantity || 0
