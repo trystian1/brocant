@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "./utils/firebase.config";
+import { getUserIdCookie } from "./utils/get-user-cookie";
 
 export function middleware(request: NextRequest) {
-    const user = request.cookies.get('userid')?.value
-    const response = NextResponse.next();
-    
-    if (!user) {
-        response.cookies.set('userid', crypto.randomUUID())
-    }
+  const response = NextResponse.next();
 
-    return response;
-  }
+  return response;
+}

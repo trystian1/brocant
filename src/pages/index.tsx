@@ -1,14 +1,24 @@
 import { DialogWindow } from "@/components/Dialog";
 import { Header } from "@/components/Header";
-import { addToBasket, getOrCreateBasket, substractStock } from "@/utils/add-to-basket";
+import { ProductComponent } from "@/components/Product";
+import { Products } from "@/components/Products";
+import { Wrapper } from "@/components/Wrapper";
+import { ShopProvider } from "@/context/ShopContext";
+import {
+  addToBasket,
+  getOrCreateBasket,
+  substractStock,
+} from "@/utils/add-to-basket";
 import { getClient } from "@/utils/client";
 import { Product } from "@/utils/types";
 import { DefaultOptions, gql } from "@apollo/client";
 import { NextPageContext } from "next";
 import Link from "next/link";
 import { useState } from "react";
+import { cookies } from "next/headers";
+import { getUserIdCookie } from "@/utils/get-user-cookie";
 
-export const useCurrencyConverter = (amount: string) => {
+export const currencyConverter = (amount: string) => {
   const price = parseFloat(amount);
 
   const formatter = new Intl.NumberFormat("nl", {
@@ -16,41 +26,6 @@ export const useCurrencyConverter = (amount: string) => {
     currency: "EUR",
   });
   return formatter.format(price);
-};
-
-const Product = ({
-  product,
-  addProductToBasket,
-}: {
-  product: Product;
-  addProductToBasket: any;
-}) => {
-  console.log(product);
-  const price = useCurrencyConverter(product.price.toString());
-  return (
-    <div
-      className="product"
-      style={{
-        backgroundImage: `url(${product.image.url})`,
-        backgroundSize: "cover",
-      }}
-    >
-      <Link href={`/product/${product.id}`}>
-        <h2 className="product-title">{product.name}</h2>
-      </Link>
-      <div className="product-price-wrap">
-        <p className="product-price">{price}</p>
-        {product.stock <= 0 && <p>Helaas niet meer op voorraad</p>}
-        <button
-          disabled={product.stock <= 0}
-          onClick={() => addProductToBasket(product)}
-          className="buy-button"
-        >
-          Kopen
-        </button>
-      </div>
-    </div>
-  );
 };
 
 function ProductPage({
@@ -62,50 +37,74 @@ function ProductPage({
   userId: string;
   numberOfItemsInBasket: number;
 }) {
-  const [amountOfItemsInBasket, setAmountOfItemsInBasket] = useState(
-    numberOfItemsInBasket
-  );
-  const [isDialogOpen, setDialogOpen] = useState(false);
-  const addProductToBasket = async (product: Product) => {
-    const newStock = product.stock - 1;
-    const data = await substractStock(newStock, product.id);
-    const basket = await getOrCreateBasket(userId);
-    if (data.data.updateProduct.stock < 0 || !basket || !userId) {
-      return;
-    }
-    setDialogOpen(true);
-    const updatedBasket = await addToBasket(basket, product.id, 1);
-    
-    const itemsQuantity = updatedBasket.data.publishBasket.items?.reduce((a: number, b: any) => a + b.quantity , 0);
-    setAmountOfItemsInBasket(
-      itemsQuantity || 0
-    );
-    
-  };
-
   return (
     <>
-      <Header amountOfItemsInBasket={amountOfItemsInBasket} />
-      <div className="page-wrap">
-        <div className="products">
-          {allProducts.map((product) => (
-            <Product
-              key={product.id}
-              product={product}
-              addProductToBasket={addProductToBasket}
-            />
-          ))}
-        </div>
-      </div>
-      <DialogWindow open={isDialogOpen} setIsOpen={setDialogOpen} />
+      <ShopProvider numberOfItemsInBasket={numberOfItemsInBasket}>
+        <Wrapper>
+          <h1>Welkom bij De Kas - Brocante</h1>
+          <p>
+            {" "}
+            Brocante, waar nostalgie en charme samenkomen in een unieke
+            collectie van prachtige brocante vondsten. Onze winkel is dé
+            bestemming voor liefhebbers van vintage schoonheid en tijdloze
+            elegantie.
+          </p>
+          <p>
+            Of je nu op zoek bent naar een stijlvol antiek meubelstuk, sierlijke
+            accessoires of unieke decoratieve items, bij De Kas vind je het
+            allemaal.
+          </p>
+          <p>Bekijk hier enkele van onze producten:</p>
+          <Products
+            allProducts={allProducts}
+            userId={userId}
+            numberOfItemsInBasket={numberOfItemsInBasket}
+          />
+          <h2>Ontdek Onze Brocante Schatten</h2>
+          <p>
+            Stap binnen in een wereld van karaktervolle stukken die de tand des
+            tijds hebben doorstaan. Onze collectie omvat een breed scala aan
+            brocante spullen, van prachtige meubels tot charmante snuisterijen.
+            Elk item vertelt een verhaal en voegt een vleugje geschiedenis toe
+            aan jouw interieur.
+          </p>
+          <h2>Waarom Kiezen voor De Kas - Brocante?</h2>
+          <p>
+            Authenticiteit: Al onze brocante stukken zijn zorgvuldig
+            geselecteerd op basis van hun authentieke charme en kwaliteit.
+          </p>
+
+          <p>
+            Unieke Vondsten: Onze winkel biedt een constante aanvoer van unieke
+            vondsten, zodat je altijd iets bijzonders ontdekt.
+          </p>
+          <p>
+            Betaalbare Elegantie: Bij De Kas geloven we dat stijlvol wonen niet
+            duur hoeft te zijn. Ontdek betaalbare elegantie in onze prachtige
+            collectie.
+          </p>
+          <h3>Bezoek Onze Winkel</h3>
+          <p>
+            Of je nu je huis wilt verfraaien met tijdloze brocante schatten of
+            op zoek bent naar een uniek cadeau, bij De Kas - Brocante ben je aan
+            het juiste adres. Onze winkel is gelegen op{" "}
+            <strong>Aalsmeerderweg 65, Aalsmeer, Netherlands</strong>, waar we
+            je verwelkomen om de sfeer van vervlogen tijden te ervaren.
+          </p>
+        </Wrapper>
+      </ShopProvider>
     </>
   );
 }
 
 export async function getServerSideProps(context: NextPageContext) {
   //@ts-ignore
-  const userId = context?.req?.cookies["userid"];
-  console.log(userId)
+  const userId = getUserIdCookie(context.req, context.res);
+  //const user =  await (await fetch('http://localhost:3000/api/state')).json();
+  //console.log('YO',user.displayName);
+  const userState = await fetch("http://localhost:3000/api/state");
+  const { user } = await userState.json();
+  console.log(">>>>>>>>>", user, userId);
   const response = await getClient.query({
     query: gql`
       query BasketQuery {
@@ -121,10 +120,13 @@ export async function getServerSideProps(context: NextPageContext) {
     `,
   });
   const basket = response.data.baskets.find(
-    (basket: any) => basket.userid === userId
+    (basket: any) => basket.userid === userId,
   );
 
-  const itemsQuantity = basket?.items?.reduce((a: number, b: any) => a + b.quantity , 0);
+  const itemsQuantity = basket?.items?.reduce(
+    (a: number, b: any) => a + b.quantity,
+    0,
+  );
   const numberOfItemsInBasket = itemsQuantity || 0;
 
   const data = await getClient.query({
@@ -144,6 +146,7 @@ export async function getServerSideProps(context: NextPageContext) {
     `,
   });
   const allProducts = data.data.products;
+  console.log("USER ID", userId);
   return {
     props: {
       allProducts,

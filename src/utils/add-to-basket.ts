@@ -2,22 +2,22 @@ import { gql } from "@apollo/client";
 import { getClient, mutationClient } from "./client";
 
 export const doMutation = async (mutation: string) => {
-    console.log(`
+  console.log(`
     mutation BasketMutation {
         ${mutation}
-     }`)
-    return await mutationClient.mutate({
-      mutation: gql`
+     }`);
+  return await mutationClient.mutate({
+    mutation: gql`
         mutation BasketMutation {
            ${mutation}
         }
      `,
-    });
-  };
-  
+  });
+};
+
 export async function substractStock(newStock: number, id: string) {
-    return await mutationClient.mutate({
-      mutation: gql`
+  return await mutationClient.mutate({
+    mutation: gql`
            mutation ProductsQuery {
               updateProduct(data: { stock: ${newStock} }, where: { id: "${id}"}) {
                  id,
@@ -25,34 +25,34 @@ export async function substractStock(newStock: number, id: string) {
               }
            }
         `,
-    });
-  }
-  
+  });
+}
+
 export async function getOrCreateBasket(userId: string) {
-    await getClient.clearStore();
-    const response = await getClient.query({
-      query: gql`
-        query BasketQuery {
-          baskets {
-            userid
+  await getClient.clearStore();
+  const response = await getClient.query({
+    query: gql`
+      query BasketQuery {
+        baskets {
+          userid
+          id
+          items {
+            productId
+            quantity
             id
-            items {
-              productId,
-              quantity,
-              id
-            }
           }
         }
-      `,
-    });
-    const basketForUser = response.data.baskets.find(
-      (basket: any) => basket.userid === userId
-    );
-    if (basketForUser) {
-      return basketForUser;
-    }
-  
-    const basket = await doMutation(`
+      }
+    `,
+  });
+  const basketForUser = response.data.baskets.find(
+    (basket: any) => basket.userid === userId,
+  );
+  if (basketForUser) {
+    return basketForUser;
+  }
+
+  const basket = await doMutation(`
       createBasket(data: { userid: "${userId}" }) {
           id,
           userid,
@@ -61,37 +61,46 @@ export async function getOrCreateBasket(userId: string) {
           }
         }
      `);
-    await doMutation(`
+  await doMutation(`
         publishBasket(where: {id: "${basket.data.createBasket.id}"}) {
            id
         }
      `);
-  
-    return basket.data.createBasket;
-  }
-  
-export async function addToBasket(basket: any, productId: string, quantity: number) {
-    console.log('basket?.items', basket?.items)
-    if (basket?.items?.find((item: any) => productId == item.productId)) {
-      console.log(basket.items.find((item: any) => productId == item.productId))
-      const oldItem = basket.items.find((item: any) => productId == item.productId);
-      
-      await doMutation(`
+
+  return basket.data.createBasket;
+}
+
+export async function addToBasket(
+  basket: any,
+  productId: string,
+  quantity: number,
+) {
+  console.log("basket?.items", basket?.items);
+  if (basket?.items?.find((item: any) => productId == item.productId)) {
+    console.log(basket.items.find((item: any) => productId == item.productId));
+    const oldItem = basket.items.find(
+      (item: any) => productId == item.productId,
+    );
+
+    await doMutation(`
       updateBasket(
-        data: {items: {update: { where: {  id: "${oldItem.id}"}, data: {productId: "${productId}", quantity: ${quantity + oldItem.quantity}}}}}
+        data: {items: {update: { where: {  id: "${
+          oldItem.id
+        }"}, data: {productId: "${productId}", quantity: ${
+          quantity + oldItem.quantity
+        }}}}}
         where: { id: "${basket.id}"}
       ) { id }`);
-    } else {
-      console.log('CREATE', basket.id, productId, quantity);
-      await doMutation(`
+  } else {
+    console.log("CREATE", basket.id, productId, quantity);
+    await doMutation(`
       updateBasket(
         data: {items: {create: {data: {productId: "${productId}", quantity: ${quantity}}}}}
         where: { id: "${basket.id}"}
-      ) { id }`)
-    }
-    
-  
-    return await doMutation(`
+      ) { id }`);
+  }
+
+  return await doMutation(`
         publishBasket(where: {id: "${basket.id}"}) {
            items {
               productId,
@@ -101,4 +110,4 @@ export async function addToBasket(basket: any, productId: string, quantity: numb
            userid
         }
      `);
-  }
+}
