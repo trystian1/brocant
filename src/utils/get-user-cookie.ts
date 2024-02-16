@@ -1,5 +1,6 @@
 import Cookies from "cookies";
 import { IncomingMessage, ServerResponse } from "http";
+import * as crypto from 'crypto';
 
 export const getUserIdCookie = (
   request?: IncomingMessage,
