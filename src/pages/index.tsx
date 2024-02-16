@@ -102,9 +102,9 @@ export async function getServerSideProps(context: NextPageContext) {
   const userId = getUserIdCookie(context.req, context.res);
   //const user =  await (await fetch('http://localhost:3000/api/state')).json();
   //console.log('YO',user.displayName);
-  const userState = await fetch("http://localhost:3000/api/state");
-  const { user } = await userState.json();
-  console.log(">>>>>>>>>", user, userId);
+  // const userState = await fetch("http://localhost:3000/api/state");
+  // const { user } = await userState.json();
+  // console.log(">>>>>>>>>", user, userId);
   const response = await getClient.query({
     query: gql`
       query BasketQuery {

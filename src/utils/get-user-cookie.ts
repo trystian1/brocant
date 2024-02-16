@@ -7,7 +7,6 @@ export const getUserIdCookie = (
   response?: ServerResponse<IncomingMessage>,
 ) => {
   if (!request || !response) {
-    console.log("RETURN Null");
     return null;
   }
   const cookies = new Cookies(request, response);
@@ -16,6 +15,5 @@ export const getUserIdCookie = (
     user = crypto.randomUUID();
     cookies.set("userid", user);
   }
-  console.log("RETURN", user);
   return user;
 };
