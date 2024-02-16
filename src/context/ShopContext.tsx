@@ -40,6 +40,7 @@ export const ShopProvider = ({
       value={{
         numberOfItemsInBasket: numberOfItems,
         setNumberOfItemsInBasket,
+        //@ts-ignore
         user: user ? user.user : null,
       }}
     >
