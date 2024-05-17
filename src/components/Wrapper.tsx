@@ -15,7 +15,11 @@ export const Wrapper = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <Header amountOfItemsInBasket={numberOfItemsInBasket} />
-      <div style={{ ...styles }}>{children}</div>
+      <div className="flex justify-around">
+        <div className="min-w-[70%]" style={{ ...styles }}>
+          {children}
+        </div>
+      </div>
       <Footer />
     </>
   );

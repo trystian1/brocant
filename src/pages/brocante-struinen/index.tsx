@@ -1,4 +1,5 @@
 import { DialogWindow } from "@/components/Dialog";
+import { GeneralText } from "@/components/GeneralText";
 import { Header } from "@/components/Header";
 import { ProductComponent } from "@/components/Product";
 import { Products } from "@/components/Products";
@@ -33,6 +34,7 @@ function ProductsPage({
           userId={userId}
           numberOfItemsInBasket={numberOfItemsInBasket}
         />
+        <GeneralText />
       </Wrapper>
     </ShopProvider>
   );

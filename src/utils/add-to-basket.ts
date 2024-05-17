@@ -29,11 +29,12 @@ export async function substractStock(newStock: number, id: string) {
 }
 
 export async function getOrCreateBasket(userId: string) {
+  console.log(userId);
   await getClient.clearStore();
   const response = await getClient.query({
     query: gql`
       query BasketQuery {
-        baskets {
+        baskets(where: { userid: "${userId}"}) {
           userid
           id
           items {
@@ -46,7 +47,7 @@ export async function getOrCreateBasket(userId: string) {
     `,
   });
   const basketForUser = response.data.baskets.find(
-    (basket: any) => basket.userid === userId,
+    (basket: any) => basket.userid === userId
   );
   if (basketForUser) {
     return basketForUser;
@@ -73,13 +74,11 @@ export async function getOrCreateBasket(userId: string) {
 export async function addToBasket(
   basket: any,
   productId: string,
-  quantity: number,
+  quantity: number
 ) {
-  console.log("basket?.items", basket?.items);
   if (basket?.items?.find((item: any) => productId == item.productId)) {
-    console.log(basket.items.find((item: any) => productId == item.productId));
     const oldItem = basket.items.find(
-      (item: any) => productId == item.productId,
+      (item: any) => productId == item.productId
     );
 
     await doMutation(`
@@ -87,12 +86,11 @@ export async function addToBasket(
         data: {items: {update: { where: {  id: "${
           oldItem.id
         }"}, data: {productId: "${productId}", quantity: ${
-          quantity + oldItem.quantity
-        }}}}}
+      quantity + oldItem.quantity
+    }}}}}
         where: { id: "${basket.id}"}
       ) { id }`);
   } else {
-    console.log("CREATE", basket.id, productId, quantity);
     await doMutation(`
       updateBasket(
         data: {items: {create: {data: {productId: "${productId}", quantity: ${quantity}}}}}

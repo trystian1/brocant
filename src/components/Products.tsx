@@ -22,10 +22,8 @@ export function Products({
   const { setNumberOfItemsInBasket } = useShop();
   const [isDialogOpen, setDialogOpen] = useState(false);
   const addProductToBasket = async (product: Product) => {
-    const newStock = product.stock - 1;
-    const data = await substractStock(newStock, product.id);
     const basket = await getOrCreateBasket(userId);
-    if (data.data.updateProduct.stock < 0 || !basket || !userId) {
+    if (!basket || !userId || !product.stock) {
       return;
     }
     setDialogOpen(true);
@@ -33,7 +31,7 @@ export function Products({
 
     const itemsQuantity = updatedBasket.data.publishBasket.items?.reduce(
       (a: number, b: any) => a + b.quantity,
-      0,
+      0
     );
     setNumberOfItemsInBasket(itemsQuantity || 0);
   };

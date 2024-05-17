@@ -5,6 +5,7 @@ import { getUserIdCookie } from "@/utils/get-user-cookie";
 import { gql } from "@apollo/client";
 import { NextPageContext } from "next";
 import { Dispatch, SetStateAction, useState } from "react";
+import { useRouter } from 'next/navigation'
 
 type AuthType = "LOGIN" | "REGISTER";
 
@@ -15,17 +16,30 @@ export const Auth = ({
 }) => {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [streetName, setStreetName] = useState("");
+  const [city, setCity] = useState("");
   const [displayName, setDisplayUsername] = useState("");
   const [authType, setAuthType] = useState<AuthType>("LOGIN");
-
+  const [error, setError] = useState("");
+  const router = useRouter()
   const onClickAuth = async () => {
     const apiStr = authType === "LOGIN" ? "api/login" : "api/register";
+    setError('');
+    if (authType === 'REGISTER') {
+      if (!city || !streetName || !postalCode) {
+        setError("Niet alle velden zijn ingevuld");
+        return;
+      }
+    }
     fetch(apiStr, {
       method: "POST",
-      body: JSON.stringify({ password, email, displayName }),
+      body: JSON.stringify({ password, email, displayName, city, streetName, postalCode }),
     }).then(() => {
-      console.log("SUCCESS");
-    });
+      router.push('/')
+    }).catch(() => {
+      setError('Er ging it mis')
+    })
   };
   return (
     <ShopProvider numberOfItemsInBasket={numberOfItemsInBasket}>
@@ -35,10 +49,17 @@ export const Auth = ({
           Om uw bestellingen te kunnen traceren, en een overzicht te krijgen
           raden wij aan om een account aan te maken
         </p>
+        {error && <p className="text-red-600">{error}</p>}
         <LoginForm
           password={password}
           setPassword={setPassword}
           email={email}
+          postalCode={postalCode}
+          city={city}
+          streetName={streetName}
+          setPostalCode={setPostalCode}
+          setStreetName={setStreetName}
+          setCity={setCity}
           setEmail={setEmail}
           authType={authType}
           displayName={displayName}
@@ -48,6 +69,7 @@ export const Auth = ({
           {authType === "LOGIN" ? "Inloggen" : "Registreren"}
         </button>
         <a
+          className="block mt-4"
           onClick={() => {
             if (authType === "REGISTER") {
               setAuthType("LOGIN");
@@ -72,17 +94,30 @@ const LoginForm = ({
   email,
   setEmail,
   authType,
+  city, 
+  postalCode,
+  streetName,
   displayName,
   setDisplayName,
+  setStreetName,
+  setPostalCode,
+  setCity
 }: {
   password: string;
   setPassword: Dispatch<SetStateAction<string>>;
   email: string;
+  city: string; 
+  postalCode: string;
+  streetName: string;
   setEmail: Dispatch<SetStateAction<string>>;
   displayName: string;
   setDisplayName: Dispatch<SetStateAction<string>>;
+  setCity:  Dispatch<SetStateAction<string>>;
+  setStreetName:  Dispatch<SetStateAction<string>>;
+  setPostalCode:  Dispatch<SetStateAction<string>>;
   authType: "LOGIN" | "REGISTER";
 }) => {
+  console.log({city});
   return (
     <>
       <h2>{authType === "LOGIN" ? "Inloggen" : "Registreren"}</h2>
@@ -102,7 +137,7 @@ const LoginForm = ({
                     type="text"
                     name="username"
                     id="username"
-                    autoComplete="username"
+                    autoComplete="given-name"
                     className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
                     placeholder="Andre"
                     value={displayName}
@@ -156,11 +191,44 @@ const LoginForm = ({
               </div>
             </div>
           </div>
+          {authType === 'REGISTER' &&
+            <>
+              <InputField autocomplete="street-address" name="Straat" placeholder={"straatNaam + huisnummer"} value={streetName} onChange={setStreetName}/>
+              <InputField autocomplete='postal-code' name="Postcode" placeholder={"1431VD"} value={postalCode} onChange={setPostalCode}/>
+              <InputField autocomplete='address-level2' name="Stad/Dorp" placeholder={"Aalsmeer"} value={city} onChange={setCity} />  
+            </>
+          }
         </div>
       </div>
     </>
   );
 };
+
+const InputField = ({ value, name, autocomplete, onChange, placeholder } : { value: string; name: string, autocomplete: string, onChange: Dispatch<SetStateAction<string>>, placeholder: string }) => {
+  
+  return   <div className="mt-2">
+  <label
+    htmlFor={name}
+    className="block text-sm font-medium leading-6 text-gray-900"
+  >
+    {name}
+  </label>
+  <div className="mt-2">
+    <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
+      <input
+        type={name}
+        name={name}
+        id={name}
+        autoComplete={autocomplete}
+        className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+        placeholder={placeholder}
+        value={value}
+        onChange={(evt) => onChange(evt.target.value)}
+      />
+    </div>
+  </div>
+</div>
+}
 
 export async function getServerSideProps(context: NextPageContext) {
   const userId = getUserIdCookie(context.req, context.res);

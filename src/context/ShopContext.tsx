@@ -12,6 +12,7 @@ type Props = {
   numberOfItemsInBasket: number;
   setNumberOfItemsInBasket: Dispatch<SetStateAction<number>>;
   user: any;
+  userFetched: boolean;
 };
 
 const ShopContext = createContext<Props | null>(null);
@@ -23,8 +24,9 @@ export const ShopProvider = ({
   children: ReactNode;
   numberOfItemsInBasket: number;
 }) => {
+  const [userFetched, setUserFetched] = useState(false);
   const [numberOfItems, setNumberOfItemsInBasket] = useState(
-    numberOfItemsInBasket,
+    numberOfItemsInBasket
   );
   const [user, setUser] = useState(null);
   useEffect(() => {
@@ -32,7 +34,12 @@ export const ShopProvider = ({
       .then((response) => {
         return response.json();
       })
-      .then((user) => setUser(user));
+      .then((user) => {
+        setUser(user);
+      })
+      .finally(() => {
+        setUserFetched(true);
+      });
   }, []);
 
   return (
@@ -42,6 +49,7 @@ export const ShopProvider = ({
         setNumberOfItemsInBasket,
         //@ts-ignore
         user: user ? user.user : null,
+        userFetched,
       }}
     >
       {children}
@@ -53,7 +61,7 @@ export const useShop = () => {
   const dataGridContext = useContext(ShopContext);
   if (!dataGridContext) {
     throw new Error(
-      "ShopContext: ShopContext cannot be null. Wrap your app with an <ShopProvider>",
+      "ShopContext: ShopContext cannot be null. Wrap your app with an <ShopProvider>"
     );
   }
   return dataGridContext;

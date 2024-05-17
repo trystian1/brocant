@@ -1,27 +1,26 @@
-import { DialogWindow } from "@/components/Dialog";
-import { Header } from "@/components/Header";
-import { ProductComponent } from "@/components/Product";
 import { Products } from "@/components/Products";
 import { Wrapper } from "@/components/Wrapper";
 import { ShopProvider } from "@/context/ShopContext";
-import {
-  addToBasket,
-  getOrCreateBasket,
-  substractStock,
-} from "@/utils/add-to-basket";
 import { getClient } from "@/utils/client";
 import { Product } from "@/utils/types";
-import { DefaultOptions, gql } from "@apollo/client";
+import { gql } from "@apollo/client";
 import { NextPageContext } from "next";
-import Link from "next/link";
-import { useState } from "react";
-import { cookies } from "next/headers";
 import { getUserIdCookie } from "@/utils/get-user-cookie";
 
 export const currencyConverter = (amount: string) => {
   const price = parseFloat(amount);
 
   const formatter = new Intl.NumberFormat("nl", {
+    style: "currency",
+    currency: "EUR",
+  });
+  return formatter.format(price);
+};
+
+export const currencyConverterEn = (amount: string) => {
+  const price = parseFloat(amount);
+
+  const formatter = new Intl.NumberFormat("en", {
     style: "currency",
     currency: "EUR",
   });
@@ -100,11 +99,6 @@ function ProductPage({
 export async function getServerSideProps(context: NextPageContext) {
   //@ts-ignore
   const userId = getUserIdCookie(context.req, context.res);
-  //const user =  await (await fetch('http://localhost:3000/api/state')).json();
-  //console.log('YO',user.displayName);
-  // const userState = await fetch("http://localhost:3000/api/state");
-  // const { user } = await userState.json();
-  // console.log(">>>>>>>>>", user, userId);
   const response = await getClient.query({
     query: gql`
       query BasketQuery {
@@ -120,12 +114,12 @@ export async function getServerSideProps(context: NextPageContext) {
     `,
   });
   const basket = response.data.baskets.find(
-    (basket: any) => basket.userid === userId,
+    (basket: any) => basket.userid === userId
   );
 
   const itemsQuantity = basket?.items?.reduce(
     (a: number, b: any) => a + b.quantity,
-    0,
+    0
   );
   const numberOfItemsInBasket = itemsQuantity || 0;
 

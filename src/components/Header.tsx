@@ -10,7 +10,7 @@ import { useShop } from "@/context/ShopContext";
 
 export const Header = ({ amountOfItemsInBasket }: Props) => {
   const { user } = useShop();
-  console.log(user);
+
   return (
     <>
       <div className="header">
@@ -20,13 +20,13 @@ export const Header = ({ amountOfItemsInBasket }: Props) => {
               <Image
                 src="/logo.jpg"
                 alt="Next.js Logo"
-                width={37}
-                height={37}
+                width={30}
+                height={30}
                 style={{ borderRadius: "20px", display: "inline-block" }}
                 priority
               />
               <h1
-                className="text-2xl"
+                className="text-2xl sm:text-1xl"
                 style={{
                   color: "#fff",
                   display: "inline-block",

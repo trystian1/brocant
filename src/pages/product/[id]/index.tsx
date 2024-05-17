@@ -1,4 +1,5 @@
 import { DialogWindow } from "@/components/Dialog";
+import { GeneralText } from "@/components/GeneralText";
 import { Header } from "@/components/Header";
 import { Wrapper } from "@/components/Wrapper";
 import { ShopProvider, useShop } from "@/context/ShopContext";
@@ -50,13 +51,15 @@ const ProductInner = ({
       return;
     }
     setDialogOpen(true);
+    
     const updatedBasket = await addToBasket(basket, product.id, 1);
-
     const itemsQuantity = updatedBasket.data.publishBasket.items?.reduce(
       (a: number, b: any) => a + b.quantity,
       0,
     );
     setNumberOfItemsInBasket(itemsQuantity || 0);
+    
+
   };
   return (
     <>
@@ -79,6 +82,8 @@ const ProductInner = ({
           <p className="product-description">{product.description}</p>
         </div>
       </div>
+      <h2>De Brocante Kas staat voor:</h2>
+      <GeneralText />
       <DialogWindow open={isDialogOpen} setIsOpen={setDialogOpen} />
     </>
   );

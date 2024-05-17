@@ -102,7 +102,7 @@ export async function getServerSideProps(context: NextPageContext) {
   );
   return {
     props: {
-      numberOfItemsInBasket: 1,
+      numberOfItemsInBasket: itemsQuantity,
     },
   };
 }
