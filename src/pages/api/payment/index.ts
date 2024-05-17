@@ -23,7 +23,8 @@ export default async function handler(
     },
     // customer: customerReference,
     description: title,
-    redirectUrl: `http://localhost:3000/order/${orderId}`,
+    redirectUrl: `https://brocant.vercel.app/order/${orderId}`,
+    // `http://localhost:3000/order/${orderId}`,
     metadata: {
       order_id: orderId,
     },
